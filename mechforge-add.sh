@@ -112,18 +112,42 @@ else
     cp "$MECHFORGE_DIR/CLAUDE.md" "$TARGET_DIR/CLAUDE.md"
 fi
 
-# ── Python dependencies ───────────────────────────────────────────────────────
+# ── Python venv + dependencies ────────────────────────────────────────────────
 
 echo ""
-echo "→ Installing Python dependencies"
-if command -v pip3 &>/dev/null; then
-    pip3 install -q -r "$TARGET_DIR/requirements.txt"
-    echo "  installed: mcp, pydantic, sqlalchemy"
-elif command -v pip &>/dev/null; then
-    pip install -q -r "$TARGET_DIR/requirements.txt"
-    echo "  installed: mcp, pydantic, sqlalchemy"
+echo "→ Creating Python virtual environment (.venv)"
+PYTHON=""
+for cmd in python3 python; do
+    if command -v "$cmd" &>/dev/null && "$cmd" -c "import venv" 2>/dev/null; then
+        PYTHON="$cmd"
+        break
+    fi
+done
+
+if [[ -z "$PYTHON" ]]; then
+    echo "  ERROR: python3 with venv support not found."
+    echo "  On Debian/Ubuntu: sudo apt install python3-full"
+    echo "  On macOS: brew install python3"
+    exit 1
+fi
+
+"$PYTHON" -m venv "$TARGET_DIR/.venv"
+echo "  created: $TARGET_DIR/.venv"
+
+echo "→ Installing Python dependencies into .venv"
+"$TARGET_DIR/.venv/bin/pip" install -q -r "$TARGET_DIR/requirements.txt"
+echo "  installed: mcp, pydantic, sqlalchemy"
+
+# Add .venv to .gitignore if not already present
+GITIGNORE="$TARGET_DIR/.gitignore"
+if [[ -f "$GITIGNORE" ]]; then
+    if ! grep -qxF ".venv" "$GITIGNORE"; then
+        echo ".venv" >> "$GITIGNORE"
+        echo "→ Added .venv to .gitignore"
+    fi
 else
-    echo "  WARNING: pip not found — install manually: pip install -r requirements.txt"
+    echo ".venv" > "$GITIGNORE"
+    echo "→ Created .gitignore with .venv"
 fi
 
 # ── Done ──────────────────────────────────────────────────────────────────────
@@ -136,7 +160,7 @@ if [[ "${SETTINGS_SKIPPED:-false}" == "true" ]]; then
     echo "ACTION REQUIRED — add this to your .claude/settings.json mcpServers block:"
     echo ""
     echo '  "mechforge": {'
-    echo '    "command": "python",'
+    echo '    "command": ".venv/bin/python",'
     echo '    "args": ["-m", "mcp_server.feature_mcp"],'
     echo '    "env": { "PROJECT_DIR": "." }'
     echo '  }'
