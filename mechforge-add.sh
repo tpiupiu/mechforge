@@ -10,6 +10,26 @@ set -euo pipefail
 MECHFORGE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TARGET_DIR="${1:-}"
 
+# ── Helpers ───────────────────────────────────────────────────────────────────
+
+_write_settings_json() {
+    local dir="$1"
+    cat > "$dir/.claude/settings.json" <<EOF
+{
+  "mcpServers": {
+    "mechforge": {
+      "command": "$dir/.venv/bin/python3",
+      "args": ["-m", "mcp_server.feature_mcp"],
+      "cwd": "$dir",
+      "env": {
+        "PROJECT_DIR": "$dir"
+      }
+    }
+  }
+}
+EOF
+}
+
 # ── Validation ────────────────────────────────────────────────────────────────
 
 if [[ -z "$TARGET_DIR" ]]; then
@@ -89,13 +109,15 @@ if [[ -d "$TARGET_DIR/.claude" ]]; then
         echo "  skip .claude/settings.json (already exists — add MCP server manually, see below)"
         SETTINGS_SKIPPED=true
     else
-        cp "$MECHFORGE_DIR/.claude/settings.json" "$TARGET_DIR/.claude/settings.json"
+        _write_settings_json "$TARGET_DIR"
         echo "  added .claude/settings.json"
         SETTINGS_SKIPPED=false
     fi
 else
     echo "→ Copying .claude/ (fresh install)"
     cp -r "$MECHFORGE_DIR/.claude" "$TARGET_DIR/"
+    # Overwrite the copied settings.json with target-specific paths
+    _write_settings_json "$TARGET_DIR"
     SETTINGS_SKIPPED=false
 fi
 
@@ -160,7 +182,7 @@ if [[ "${SETTINGS_SKIPPED:-false}" == "true" ]]; then
     echo "ACTION REQUIRED — add this to your .claude/settings.json mcpServers block:"
     echo ""
     echo '  "mechforge": {'
-    echo '    "command": ".venv/bin/python",'
+    echo '    "command": ".venv/bin/python3",'
     echo '    "args": ["-m", "mcp_server.feature_mcp"],'
     echo '    "env": { "PROJECT_DIR": "." }'
     echo '  }'

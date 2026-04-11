@@ -4,3 +4,4 @@ __pycache__/
 .mechforge/
 .env
 .env.local
+.venv

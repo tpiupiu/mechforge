@@ -1,10 +1,11 @@
 {
   "mcpServers": {
     "mechforge": {
-      "command": ".venv/bin/python",
+      "command": "/home/piupiu/.mechforge/.venv/bin/python3",
       "args": ["-m", "mcp_server.feature_mcp"],
+      "cwd": "/home/piupiu/.mechforge",
       "env": {
-        "PROJECT_DIR": "."
+        "PROJECT_DIR": "/home/piupiu/.mechforge"
       }
     }
   }
