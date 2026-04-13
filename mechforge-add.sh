@@ -104,6 +104,16 @@ if [[ -d "$TARGET_DIR/.claude" ]]; then
         fi
     done
 
+    # Skills (e.g. playwright-cli) — always overwrite to keep up to date
+    if [[ -d "$MECHFORGE_DIR/.claude/skills" ]]; then
+        mkdir -p "$TARGET_DIR/.claude/skills"
+        for skill_dir in "$MECHFORGE_DIR/.claude/skills/"*/; do
+            skill_name="$(basename "$skill_dir")"
+            cp -r "$skill_dir" "$TARGET_DIR/.claude/skills/$skill_name"
+            echo "  added .claude/skills/$skill_name"
+        done
+    fi
+
     # settings.json — merge mcpServers block if file exists
     if [[ -f "$TARGET_DIR/.claude/settings.json" ]]; then
         echo "  skip .claude/settings.json (already exists — add MCP server manually, see below)"

@@ -86,9 +86,41 @@ Implement the chosen feature thoroughly:
 3. Fix any issues discovered
 4. Verify the feature works end-to-end
 
+### STEP 4.5: WRITE AUTOMATED TESTS
+
+After implementing the feature, write automated tests before doing browser verification.
+These tests live in the repo and catch future regressions without browser automation.
+
+**Backend (Python):** Add to `tests/` or alongside the module:
+```bash
+# Run with:
+pytest tests/ -v
+```
+
+**Frontend (TypeScript/JavaScript):** Add to `src/__tests__/` or colocated `.test.ts` files:
+```bash
+# Run with:
+npm test        # or: npx vitest run / npx jest
+```
+
+**What to test:**
+- Unit: pure functions, validation logic, utility helpers
+- Integration: API endpoints with a real test database (no mocks)
+- Do NOT write Playwright E2E tests — browser verification (Step 5) handles that
+
+**Rules:**
+- Tests must pass before you proceed to browser verification
+- No mock databases — use a real test DB (SQLite in-memory is fine for unit tests)
+- Fix failing tests before marking the feature passing
+
+---
+
 ### STEP 5: VERIFY WITH BROWSER AUTOMATION
 
 **CRITICAL:** You MUST verify features through the actual UI.
+
+The `playwright-cli` skill is installed at `.claude/skills/playwright-cli/SKILL.md`.
+If `playwright-cli` is not found, run: `playwright-cli install-browser`
 
 Use `playwright-cli` for browser automation:
 
@@ -161,6 +193,12 @@ Use the feature_mark_passing tool with feature_id=42
 **ONLY MARK A FEATURE AS PASSING AFTER VERIFICATION WITH BROWSER AUTOMATION.**
 
 ### STEP 7: COMMIT YOUR PROGRESS
+
+Ensure automated tests still pass before committing:
+```bash
+pytest tests/ -v 2>/dev/null || true   # Python
+npm test -- --passWithNoTests 2>/dev/null || true   # JS/TS
+```
 
 Make a descriptive git commit.
 
