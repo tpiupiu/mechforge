@@ -1157,5 +1157,10 @@ def ask_user(
     return "Questions presented to the user. Their response will arrive as your next message."
 
 
-if __name__ == "__main__":
+def main():
+    """Entry point for the mechforge-mcp console script."""
     mcp.run()
+
+
+if __name__ == "__main__":
+    main()
